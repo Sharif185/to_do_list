@@ -5,10 +5,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# FIX: Railway gives postgres:// but SQLAlchemy 2.x needs postgresql://
+# BUG: missing postgres:// fix — will crash on Railway
 database_url = os.environ.get("DATABASE_URL", "sqlite:///tasks.db")
-if database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql://", 1)
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
