@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TaskFlow — To-Do</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 16px;
+    }
+
+    .wrapper {
+      width: 100%;
+      max-width: 560px;
+    }
+
+    /* ── Header above card ── */
+    .app-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .app-header .logo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: rgba(255,255,255,0.95);
+      letter-spacing: 0.5px;
+    }
+
+    .app-header .logo span {
+      color: #ffd700;
+    }
+
+    /* ── Main card ── */
+    .card {
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      overflow: hidden;
+    }
+
+    .card-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 32px 36px 28px;
+    }
+
+    .card-header h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .card-header p {
+      font-size: 0.875rem;
+      color: rgba(255,255,255,0.75);
+    }
+
+    .stats-row {
+      display: flex;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .stat-pill {
+      background: rgba(255,255,255,0.15);
+      border-radius: 50px;
+      padding: 6px 14px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #fff;
+      backdrop-filter: blur(4px);
+    }
+
+    .card-body {
+      padding: 28px 36px 36px;
+    }
+
+    /* ── Add task form ── */
+    .add-form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .add-form input[type="text"] {
+      flex: 1;
+      padding: 13px 18px;
+      border: 2px solid #e8e8f0;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-family: 'Inter', sans-serif;
+      color: #333;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      background: #fafafa;
+    }
+
+    .add-form input[type="text"]:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 4px rgba(102,126,234,0.12);
+      background: #fff;
+    }
+
+    .add-form input::placeholder { color: #b0b0c0; }
+
+    .add-btn {
+      padding: 13px 22px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
+      white-space: nowrap;
+      box-shadow: 0 4px 14px rgba(102,126,234,0.4);
+    }
+
+    .add-btn:hover { opacity: 0.9; box-shadow: 0 6px 18px rgba(102,126,234,0.5); }
+    .add-btn:active { transform: scale(0.97); }
+
+    /* ── Section label ── */
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #aaa;
+      margin-bottom: 14px;
+    }
+
+    /* ── Task list ── */
+    .task-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: #fafafa;
+      border: 1.5px solid #f0f0f8;
+      border-radius: 14px;
+      padding: 14px 16px;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+      animation: slideIn 0.25s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .task-item:hover {
+      border-color: #d0d0f0;
+      box-shadow: 0 4px 16px rgba(102,126,234,0.08);
+      transform: translateY(-1px);
+    }
+
+    .task-number {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .task-text {
+      flex: 1;
+      font-size: 0.92rem;
+      color: #2d2d3a;
+      font-weight: 500;
+      word-break: break-word;
+      line-height: 1.4;
+    }
+
+    .delete-btn {
+      background: none;
+      border: 1.5px solid #ffcdd2;
+      color: #e57373;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .delete-btn:hover {
+      background: #ff5252;
+      border-color: #ff5252;
+      color: #fff;
+    }
+
+    .edit-btn {
+      background: none;
+      border: 1.5px solid #a5b4fc;
+      color: #a5b4fc;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-right: 6px;
+    }
+
+    .edit-btn:hover {
+      background: #6c63ff;
+      border-color: #6c63ff;
+      color: #fff;
+    }
+
+    /* Inline edit form (hidden by default) */
+    .edit-form {
+      display: none;
+      flex: 1;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .edit-form input[type="text"] {
+      flex: 1;
+      padding: 7px 12px;
+      border: 2px solid #667eea;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-family: 'Inter', sans-serif;
+      color: #333;
+      outline: none;
+      background: #fff;
+    }
+
+    .save-btn {
+      padding: 7px 14px;
+      background: #667eea;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .save-btn:hover { background: #574fd6; }
+
+    .cancel-btn {
+      padding: 7px 12px;
+      background: none;
+      border: 1.5px solid #ccc;
+      color: #999;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .cancel-btn:hover { border-color: #aaa; color: #666; }
+
+    .task-item.editing .task-text,
+    .task-item.editing .edit-btn,
+    .task-item.editing .delete-btn { display: none; }
+
+    .task-item.editing .edit-form { display: flex; }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 12px;
+      opacity: 0.4;
+    }
+
+    .empty-state p {
+      color: #bbb;
+      font-size: 0.9rem;
+    }
+
+    /* ── Footer ── */
+    .card-footer {
+      border-top: 1px solid #f0f0f8;
+      padding: 14px 36px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .card-footer span {
+      font-size: 0.75rem;
+      color: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+
+    <div class="app-header">
+      <div class="logo">Task<span>Flow</span></div>
+    </div>
+
+    <div class="card">
+
+      <div class="card-header">
+        <h1>My Tasks</h1>
+        <p>Stay focused and get things done.</p>
+        <div class="stats-row">
+          <div class="stat-pill">📋 {{ tasks|length }} Total</div>
+
+          {% if tasks|length > 0 %}
+          <div class="stat-pill">✨ Keep going!</div>
+          {% else %}
+          <div class="stat-pill">🎉 All clear!</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <form class="add-form" method="POST" action="/">
+          <input type="text" name="task" placeholder="What needs to be done?" autocomplete="off" required />
+          <button type="submit" class="add-btn">+ Add Task</button>
+        </form>
+
+        {% if tasks %}
+          <div class="section-label">Your tasks</div>
+          <ul class="task-list">
+            {% for task in tasks %}
+            <li class="task-item" id="task-{{ task.id }}">
+              <div class="task-number">{{ loop.index }}</div>
+              <span class="task-text">{{ task.text }}</span>
+
+              <form class="edit-form" method="POST" action="/edit/{{ task.id }}">
+                <input type="text" name="task_text" value="{{ task.text }}" required />
+                <button type="submit" class="save-btn">✓ Save</button>
+                <button type="button" class="cancel-btn" onclick="cancelEdit({{ task.id }})">✕</button>
+              </form>
+
+              <button class="edit-btn" onclick="startEdit({{ task.id }})">✎ Edit</button>
+              <a href="/delete/{{ task.id }}">
+                <button class="delete-btn">✕ Remove</button>
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-icon">✅</div>
+            <p>No tasks yet. Add one above to get started.</p>
+          </div>
+        {% endif %}
+
+      </div>
+
+      <div class="card-footer">
+        <span>TaskFlow &mdash; Simple productivity, beautifully done.</span>
+      </div>
+
+    </div>
+  </div>
+  <script>
+    function startEdit(id) {
+      document.getElementById('task-' + id).classList.add('editing');
+      document.querySelector('#task-' + id + ' .edit-form input').focus();
+    }
+    function cancelEdit(id) {
+      document.getElementById('task-' + id).classList.remove('editing');
+    }
+  </script>
+</body>
+</html>
